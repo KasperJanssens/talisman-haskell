@@ -1,5 +1,5 @@
 module Battle where
-import PlayerCharacter
+import Characters.PlayerCharacter
 import System.Random
 import Control.Monad.State
 
