@@ -12,6 +12,14 @@ mkDList list = let (firstElem,lastElem) = go lastElem list firstElem
                                   (rest,lastElem) = go this xs next
                               in  (this,lastElem)
 
+
+goto::(Eq a) => DList a -> a -> DList a
+goto this@(DLNode _left cur right) x | cur == x = this
+                                     | otherwise = goto right x
+
+apply::(a -> a) -> DList a -> DList a
+apply f (DLNode left x right) = DLNode left (f x) right
+
 {-
 mkDList (1:(2:[])) ->
 

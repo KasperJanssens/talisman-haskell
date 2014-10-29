@@ -1,3 +1,3 @@
 module Adventure where
 
-newtype Adventure = Adventure String
+newtype Adventure = Adventure String deriving (Eq, Ord)

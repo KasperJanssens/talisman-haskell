@@ -1,3 +1,3 @@
 module Characters.Follower where
 
-newtype Follower = Follower String
+newtype Follower = Follower String deriving (Eq, Ord)

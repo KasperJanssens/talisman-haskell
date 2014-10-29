@@ -6,6 +6,7 @@ import Characters.Alignment
 import Board.Locations
 import Control.Lens
 
+
 data Player = Player {
   __strength::Int,
   __craft::Int,
@@ -16,7 +17,7 @@ data Player = Player {
   _followers::[Follower],
   _alignment::Alignment,
   _startingLocation::Locations
-}
+} deriving (Eq, Ord)
 
 makeLenses ''Player
 
@@ -42,12 +43,14 @@ class HasStrength a where
 class HasCraft a where
     craft::a->Int
 
-newtype Wizard = Wizard Player
-newtype Thief = Thief Player
-newtype OgreChieftain = OgreChieftain Player
+data Character =  OgreChieftain Player
+              | Thief Player
+              | Wizard Player deriving (Eq, Ord)
 
-createWizard::Wizard
-createWizard = Wizard Player {
+
+
+wizard::Player
+wizard = Player {
   __strength=2,
   __craft=5,
   _fate=3,
@@ -59,8 +62,8 @@ createWizard = Wizard Player {
   _startingLocation=Graveyard
 }
 
-createOgreChieftain::OgreChieftain
-createOgreChieftain = OgreChieftain Player {
+ogreChieftain::Player
+ogreChieftain = Player {
   __strength=5,
   __craft=2,
   _fate=1,
@@ -72,8 +75,8 @@ createOgreChieftain = OgreChieftain Player {
   _startingLocation=Crags
 }
 
-createThief::Thief
-createThief = Thief Player {
+thief::Player
+thief = Player {
   __strength=3,
   __craft=3,
   _fate=2,
@@ -84,3 +87,4 @@ createThief = Thief Player {
   _alignment=Neutral,
   _startingLocation=City
 }
+
