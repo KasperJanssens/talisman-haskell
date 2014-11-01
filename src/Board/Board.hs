@@ -1,82 +1,186 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RankNTypes #-}
 module Board.Board where
-import qualified Board.Tile as Tile
 import Characters.PlayerCharacter
 import Control.Lens
-import qualified Data.Map as Map
-import qualified Data.Graph as Graph
-import qualified Data.List as List
-import qualified Data.Tuple as Tuple
+import Control.Monad.State
+import Characters.Follower
+import Adventure
+import Object
+import Data.List as List
 
-data Space = FieldsSpace Tile.Fields
-  | ForestSpace Tile.Forest
-  | RuinsSpace Tile.Ruins
-  | TavernSpace Tile.Tavern
-  | PlainsSpace Tile.Plains
-  | WoodsSpace Tile.Woods
-  | HillsSpace Tile.Hills
-  | CitySpace Tile.City
-  | ChapelSpace Tile.Chapel
-  | SentinelSpace Tile.Sentinel
-  | GraveyardSpace Tile.Graveyard
-  | VillageSpace Tile.Village
-  | CragsSpace Tile.Crags deriving (Eq, Ord)
+data Tile = Tile {
+  _tileNumber::Int,
+  _freeFollowers::[Follower],
+  _freeObjects::[Object],
+  _adventures::[Adventure],
+  _players::[Character]
+} deriving (Eq, Ord, Show)
+
+makeLenses ''Tile
+
+defaultTile::Int -> Tile
+defaultTile number =  Tile {
+  _tileNumber = number,
+  _freeFollowers=[],
+  _freeObjects=[],
+  _adventures = [],
+  _players=[]
+}
+
+
+data Space = FieldsSpace Tile
+  | ForestSpace Tile
+  | RuinsSpace Tile
+  | TavernSpace Tile
+  | PlainsSpace Tile
+  | WoodsSpace Tile
+  | HillsSpace Tile
+  | CitySpace Tile
+  | ChapelSpace Tile
+  | SentinelSpace Tile
+  | GraveyardSpace Tile
+  | VillageSpace Tile
+  | CragsSpace Tile deriving (Eq, Ord, Show)
 
 makePrisms ''Space
 
-vertexToSpace::Map.Map Graph.Vertex Space
-vertexToSpace = Map.fromList  spaces
 
-{-spaceToVertex::Map.Map Space [Graph.Vertex]
-spaceToVertex = Map.fromList spaceAndVerticesTuples
-                where sortedBySpace =  List.groupBy (\(_,s1) (_,s2) -> s1 == s2) spaces
-                      spaceAndVerticesTuples = List.map (Tuple.swap . over _2 head . unzip) sortedBySpace-}
+class Placeable a where
+    startingLocation::a -> Prism' Space Tile
 
+instance Placeable Character where
+    startingLocation (OgreChieftain _) = _CragsSpace
+    startingLocation (Wizard _) = _GraveyardSpace
+    startingLocation (Thief _) = _CitySpace
 
-createBoard::Graph.Graph
-createBoard = Graph.buildG (firstSpaceNumber, lastSpaceNumber) $ zip [firstSpaceNumber..lastSpaceNumber] $ [firstSpaceNumber+1 .. lastSpaceNumber ] ++[firstSpaceNumber]
-              where firstSpaceNumber = fst $ head spaces
-                    lastSpaceNumber = fst $ last spaces
+data BoardGraphNode = BoardGraphNode Int (Prism' Space Tile) [Int]
+
+{-createBoardGraph::Graph.Graph
+createBoardGraph = Graph.buildG (firstSpaceNumber, lastSpaceNumber) $ zip [firstSpaceNumber..lastSpaceNumber] $ [firstSpaceNumber+1 .. lastSpaceNumber ] ++[firstSpaceNumber]
+                   where firstSpaceNumber = 1
+                         lastSpaceNumber = length spaces
 
 goRight::Int -> Graph.Graph -> Int -> Int
 goRight steps g startNode =  head $ drop steps $ Graph.reachable g startNode
 
 goLeft::Int -> Graph.Graph -> Int -> Int
-goLeft steps g startNode =  head $ drop steps $  Graph.reachable (Graph.transposeG g) startNode
+goLeft steps g startNode =  head $ drop steps $  Graph.reachable (Graph.transposeG g) startNode-}
+
+--getPlayer::Prism' Character Player -> Player
+--getPlayer charPrism =  traverseOf each charPrism allPlayers
+
+place::Character -> State [Space] ()
+place c = do
+    let updateTile = over $  startingLocation c
+        updatePlayers = over players
+    currentSpaces <- get
+    put $ List.map (updateTile  . updatePlayers $ (:) c ) currentSpaces
+
+
+chapel:: Tile
+chapel = defaultTile 1
+
+hills1 :: Tile
+hills1 = defaultTile 2
+
+sentinel::Tile
+sentinel = defaultTile 3
+
+woods1::Tile
+woods1 = defaultTile 4
+
+graveyard::Tile
+graveyard = defaultTile 5
+
+fields1::Tile
+fields1 = defaultTile 6
+
+village::Tile
+village = defaultTile 7
+
+fields2::Tile
+fields2= defaultTile 8
+
+forest::Tile
+forest = defaultTile 9
+
+plains1::Tile
+plains1 = defaultTile 10
+
+ruins::Tile
+ruins = defaultTile 11
+
+fields3::Tile
+fields3 = defaultTile 12
+
+tavern::Tile
+tavern = defaultTile 13
+
+plains2::Tile
+plains2 = defaultTile 14
+
+woods2::Tile
+woods2 = defaultTile 15
+
+plains3::Tile
+plains3 = defaultTile 16
+
+hills2::Tile
+hills2 = defaultTile 17
+
+fields4::Tile
+fields4 = defaultTile 18
+
+city::Tile
+city = defaultTile 19
+
+fields5::Tile
+fields5 = defaultTile 20
+
+woods3::Tile
+woods3 = defaultTile 21
+
+plains4::Tile
+plains4 = defaultTile 22
+
+crags::Tile
+crags = defaultTile 23
+
+fields6::Tile
+fields6 = defaultTile 24
+
+allPlayers::[Character]
+allPlayers=[ OgreChieftain ogreChieftain
+          , Wizard wizard
+          , Thief thief]
+
+spaces::[Space]
+spaces = [ChapelSpace chapel
+           , HillsSpace hills1
+           , SentinelSpace sentinel
+           , WoodsSpace woods1
+           , GraveyardSpace graveyard
+           , FieldsSpace fields1
+           , VillageSpace village
+           , FieldsSpace fields2
+           , ForestSpace forest
+           , PlainsSpace plains1
+           , RuinsSpace ruins
+           , FieldsSpace fields3
+           , TavernSpace tavern
+           , PlainsSpace plains2
+           , WoodsSpace woods2
+           , PlainsSpace plains3
+           , HillsSpace hills2
+           , FieldsSpace fields4
+           , CitySpace city
+           , FieldsSpace  fields5
+           , WoodsSpace woods3
+           , PlainsSpace plains4
+           , CragsSpace crags
+           , FieldsSpace fields6]
 
 
 
-addPlayer::Character -> Space -> Space
-addPlayer p =
-  over _CragsSpace (\(Tile.Crags crag) -> Tile.Crags $ addPlayerToTile p crag)
-   . over _GraveyardSpace (\(Tile.Graveyard graveyard) -> Tile.Graveyard $ addPlayerToTile p graveyard)
-   . over _CitySpace (\(Tile.City city) -> Tile.City $ addPlayerToTile p city)
 
-addPlayerToTile::Character -> Tile.Tile -> Tile.Tile
-addPlayerToTile p = over Tile.players (\playerList -> p:playerList)
-
-spaces::[(Int,Space)]
-spaces = zip [1..] [ChapelSpace Tile.chapel, HillsSpace Tile.hills, SentinelSpace Tile.sentinel, WoodsSpace Tile.woods, GraveyardSpace Tile.graveyard,
-  FieldsSpace Tile.fields, VillageSpace Tile.village, FieldsSpace Tile.fields, ForestSpace Tile.forest, PlainsSpace Tile.plains, RuinsSpace Tile.ruins, FieldsSpace Tile.fields,
-  TavernSpace Tile.tavern, PlainsSpace Tile.plains, WoodsSpace Tile.woods, PlainsSpace Tile.plains, HillsSpace Tile.hills, FieldsSpace Tile.fields, CitySpace Tile.city,
-  FieldsSpace Tile.fields, WoodsSpace Tile.woods, PlainsSpace Tile.plains, CragsSpace Tile.crags, FieldsSpace Tile.fields]
-
-
-
-{-createBoard::Board
-createBoard = mkDList [ChapelSpace Tile.chapel, HillsSpace Tile.hills, SentinelSpace Tile.sentinel, WoodsSpace Tile.woods, GraveyardSpace Tile.graveyard,
-  FieldsSpace Tile.fields, VillageSpace Tile.village, FieldsSpace Tile.fields, ForestSpace Tile.forest, PlainsSpace Tile.plains, RuinsSpace Tile.ruins, FieldsSpace Tile.fields,
-  TavernSpace Tile.tavern, PlainsSpace Tile.plains, WoodsSpace Tile.woods, PlainsSpace Tile.plains, HillsSpace Tile.hills, FieldsSpace Tile.fields, CitySpace Tile.city,
-  FieldsSpace Tile.fields, WoodsSpace Tile.woods, PlainsSpace Tile.plains, CragsSpace Tile.crags, FieldsSpace Tile.fields]
-
-
-placePlayers :: Board -> [Character] -> Board
-placePlayers = foldl $ flip placePlayer
-
-placePlayer:: Character -> Board -> Board
-placePlayer player@(OgreChieftain _) board = apply (addPlayer player) cragsSpace
-                                             where cragsSpace = goto board (CragsSpace Tile.crags)
-placePlayer player@(Wizard _) board = apply (addPlayer player) graveyardSpace
-                                             where graveyardSpace = goto board (GraveyardSpace Tile.graveyard)
-placePlayer player@(Thief _) board = apply (addPlayer player) citySpace
-                                             where citySpace = goto board (CitySpace Tile.city)-}

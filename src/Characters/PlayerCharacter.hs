@@ -3,8 +3,9 @@ module Characters.PlayerCharacter where
 import Object
 import Characters.Follower
 import Characters.Alignment
-import Board.Locations
 import Control.Lens
+
+
 
 
 data Player = Player {
@@ -15,9 +16,8 @@ data Player = Player {
   __life::Int,
   _objects::[Object],
   _followers::[Follower],
-  _alignment::Alignment,
-  _startingLocation::Locations
-} deriving (Eq, Ord)
+  _alignment::Alignment
+} deriving (Eq, Ord, Show)
 
 makeLenses ''Player
 
@@ -45,7 +45,11 @@ class HasCraft a where
 
 data Character =  OgreChieftain Player
               | Thief Player
-              | Wizard Player deriving (Eq, Ord)
+              | Wizard Player deriving (Eq, Ord, Show)
+
+makeLenses ''Character
+
+makePrisms ''Character
 
 
 
@@ -58,8 +62,7 @@ wizard = Player {
   __life=4,
   _objects=[],
   _followers=[],
-  _alignment=Evil,
-  _startingLocation=Graveyard
+  _alignment=Evil
 }
 
 ogreChieftain::Player
@@ -71,8 +74,7 @@ ogreChieftain = Player {
   __life=6,
   _objects=[],
   _followers=[],
-  _alignment=Neutral,
-  _startingLocation=Crags
+  _alignment=Neutral
 }
 
 thief::Player
@@ -84,7 +86,6 @@ thief = Player {
   __life=4,
   _objects=[],
   _followers=[],
-  _alignment=Neutral,
-  _startingLocation=City
+  _alignment=Neutral
 }
 

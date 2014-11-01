@@ -1,7 +1,5 @@
 module DungeonMaster where
 import Characters.PlayerCharacter
-import qualified Board.Board as Board
-import Control.Monad
 
 
 selectPlayers:: IO [Character]
