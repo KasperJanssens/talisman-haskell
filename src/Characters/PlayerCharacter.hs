@@ -4,9 +4,7 @@ import Object
 import Characters.Follower
 import Characters.Alignment
 import Control.Lens
-
-
-
+import Board.Board
 
 data Player = Player {
   __strength::Int,
@@ -17,7 +15,7 @@ data Player = Player {
   _objects::[Object],
   _followers::[Follower],
   _alignment::Alignment
-} deriving (Eq, Ord, Show)
+} deriving (Eq, Show, Ord)
 
 makeLenses ''Player
 
@@ -43,15 +41,17 @@ class HasStrength a where
 class HasCraft a where
     craft::a->Int
 
-data Character =  OgreChieftain Player
-              | Thief Player
-              | Wizard Player deriving (Eq, Ord, Show)
+type ChangeTileFunction = (Tile -> Tile) -> Space -> Space
+
+type ViewTileFunction = [Space] -> Tile
+
+data Character =  OgreChieftain Player ChangeTileFunction ViewTileFunction
+              | Thief Player ChangeTileFunction ViewTileFunction
+              | Wizard Player ChangeTileFunction ViewTileFunction
 
 makeLenses ''Character
 
 makePrisms ''Character
-
-
 
 wizard::Player
 wizard = Player {
@@ -89,3 +89,8 @@ thief = Player {
   _alignment=Neutral
 }
 
+allPlayers::[Character]
+allPlayers=[OgreChieftain ogreChieftain (over _CragsSpace) (view  (singular $ each._CragsSpace))
+          , Wizard wizard (over _GraveyardSpace) (view  (singular $ each._GraveyardSpace))
+          , Thief thief (over _CitySpace) (view  (singular $ each._CitySpace))
+          ]

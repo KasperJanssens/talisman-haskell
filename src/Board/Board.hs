@@ -1,20 +1,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RankNTypes #-}
 module Board.Board where
-import Characters.PlayerCharacter
 import Control.Lens
-import Control.Monad.State
 import Characters.Follower
 import Adventure
 import Object
-import Data.List as List
 
 data Tile = Tile {
   _tileNumber::Int,
   _freeFollowers::[Follower],
   _freeObjects::[Object],
-  _adventures::[Adventure],
-  _players::[Character]
+  _adventures::[Adventure]
 } deriving (Eq, Ord, Show)
 
 makeLenses ''Tile
@@ -24,8 +20,7 @@ defaultTile number =  Tile {
   _tileNumber = number,
   _freeFollowers=[],
   _freeObjects=[],
-  _adventures = [],
-  _players=[]
+  _adventures = []
 }
 
 
@@ -46,16 +41,6 @@ data Space = FieldsSpace Tile
 makePrisms ''Space
 
 
-class Placeable a where
-    startingLocation::a -> Prism' Space Tile
-
-instance Placeable Character where
-    startingLocation (OgreChieftain _) = _CragsSpace
-    startingLocation (Wizard _) = _GraveyardSpace
-    startingLocation (Thief _) = _CitySpace
-
-data BoardGraphNode = BoardGraphNode Int (Prism' Space Tile) [Int]
-
 {-createBoardGraph::Graph.Graph
 createBoardGraph = Graph.buildG (firstSpaceNumber, lastSpaceNumber) $ zip [firstSpaceNumber..lastSpaceNumber] $ [firstSpaceNumber+1 .. lastSpaceNumber ] ++[firstSpaceNumber]
                    where firstSpaceNumber = 1
@@ -69,13 +54,6 @@ goLeft steps g startNode =  head $ drop steps $  Graph.reachable (Graph.transpos
 
 --getPlayer::Prism' Character Player -> Player
 --getPlayer charPrism =  traverseOf each charPrism allPlayers
-
-place::Character -> State [Space] ()
-place c = do
-    let updateTile = over $  startingLocation c
-        updatePlayers = over players
-    currentSpaces <- get
-    put $ List.map (updateTile  . updatePlayers $ (:) c ) currentSpaces
 
 
 chapel:: Tile
@@ -150,10 +128,7 @@ crags = defaultTile 23
 fields6::Tile
 fields6 = defaultTile 24
 
-allPlayers::[Character]
-allPlayers=[ OgreChieftain ogreChieftain
-          , Wizard wizard
-          , Thief thief]
+
 
 spaces::[Space]
 spaces = [ChapelSpace chapel

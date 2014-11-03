@@ -3,7 +3,7 @@ import Characters.PlayerCharacter
 
 
 selectPlayers:: IO [Character]
-selectPlayers = return [Wizard wizard, Thief thief, OgreChieftain ogreChieftain]
+selectPlayers = return allPlayers
 
 {-putPlayersOnBoard :: IO Board.Board
 putPlayersOnBoard = do
