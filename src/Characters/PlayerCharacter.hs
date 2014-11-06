@@ -4,7 +4,6 @@ import Object
 import Characters.Follower
 import Characters.Alignment
 import Control.Lens
-import Board.Board
 
 data Player = Player {
   __strength::Int,
@@ -14,7 +13,8 @@ data Player = Player {
   __life::Int,
   _objects::[Object],
   _followers::[Follower],
-  _alignment::Alignment
+  _alignment::Alignment,
+  _place::Int
 } deriving (Eq, Show, Ord)
 
 makeLenses ''Player
@@ -41,13 +41,9 @@ class HasStrength a where
 class HasCraft a where
     craft::a->Int
 
-type ChangeTileFunction = (Tile -> Tile) -> Space -> Space
-
-type ViewTileFunction = [Space] -> Tile
-
-data Character =  OgreChieftain Player ChangeTileFunction ViewTileFunction
-              | Thief Player ChangeTileFunction ViewTileFunction
-              | Wizard Player ChangeTileFunction ViewTileFunction
+data Character =  OgreChieftain Player
+              | Thief Player
+              | Wizard Player
 
 makeLenses ''Character
 
@@ -62,7 +58,8 @@ wizard = Player {
   __life=4,
   _objects=[],
   _followers=[],
-  _alignment=Evil
+  _alignment=Evil,
+  _place=5
 }
 
 ogreChieftain::Player
@@ -74,7 +71,8 @@ ogreChieftain = Player {
   __life=6,
   _objects=[],
   _followers=[],
-  _alignment=Neutral
+  _alignment=Neutral,
+  _place=23
 }
 
 thief::Player
@@ -86,11 +84,12 @@ thief = Player {
   __life=4,
   _objects=[],
   _followers=[],
-  _alignment=Neutral
+  _alignment=Neutral,
+  _place=19
 }
 
 allPlayers::[Character]
-allPlayers=[OgreChieftain ogreChieftain (over _CragsSpace) (view  (singular $ each._CragsSpace))
-          , Wizard wizard (over _GraveyardSpace) (view  (singular $ each._GraveyardSpace))
-          , Thief thief (over _CitySpace) (view  (singular $ each._CitySpace))
+allPlayers=[OgreChieftain ogreChieftain
+          , Wizard wizard
+          , Thief thief
           ]

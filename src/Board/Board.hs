@@ -5,6 +5,7 @@ import Control.Lens
 import Characters.Follower
 import Adventure
 import Object
+import qualified Data.List as List
 
 data Tile = Tile {
   _tileNumber::Int,
@@ -24,13 +25,26 @@ defaultTile number =  Tile {
 }
 
 
-data Space = FieldsSpace Tile
+
+
+data Space = Fields1Space Tile
+  | Fields2Space Tile
+  | Fields3Space Tile
+  | Fields4Space Tile
+  | Fields5Space Tile
+  | Fields6Space Tile
   | ForestSpace Tile
   | RuinsSpace Tile
   | TavernSpace Tile
-  | PlainsSpace Tile
-  | WoodsSpace Tile
-  | HillsSpace Tile
+  | Plains1Space Tile
+  | Plains2Space Tile
+  | Plains3Space Tile
+  | Plains4Space Tile
+  | Woods1Space Tile
+  | Woods2Space Tile
+  | Woods3Space Tile
+  | Hills1Space Tile
+  | Hills2Space Tile
   | CitySpace Tile
   | ChapelSpace Tile
   | SentinelSpace Tile
@@ -39,22 +53,6 @@ data Space = FieldsSpace Tile
   | CragsSpace Tile deriving (Eq, Ord, Show)
 
 makePrisms ''Space
-
-
-{-createBoardGraph::Graph.Graph
-createBoardGraph = Graph.buildG (firstSpaceNumber, lastSpaceNumber) $ zip [firstSpaceNumber..lastSpaceNumber] $ [firstSpaceNumber+1 .. lastSpaceNumber ] ++[firstSpaceNumber]
-                   where firstSpaceNumber = 1
-                         lastSpaceNumber = length spaces
-
-goRight::Int -> Graph.Graph -> Int -> Int
-goRight steps g startNode =  head $ drop steps $ Graph.reachable g startNode
-
-goLeft::Int -> Graph.Graph -> Int -> Int
-goLeft steps g startNode =  head $ drop steps $  Graph.reachable (Graph.transposeG g) startNode-}
-
---getPlayer::Prism' Character Player -> Player
---getPlayer charPrism =  traverseOf each charPrism allPlayers
-
 
 chapel:: Tile
 chapel = defaultTile 1
@@ -128,34 +126,43 @@ crags = defaultTile 23
 fields6::Tile
 fields6 = defaultTile 24
 
+type Neighbours=[Int]
+
+spaces::[(Space, Neighbours)]
+spaces = [(ChapelSpace chapel,[2,24])
+           , (Hills1Space hills1,[1,3])
+           , (SentinelSpace sentinel,[2,4])
+           , (Woods1Space woods1, [3,5])
+           , (GraveyardSpace graveyard, [4,6])
+           , (Fields2Space fields1, [5,7])
+           , (VillageSpace village, [6,8])
+           , (Fields2Space fields2, [7,9])
+           , (ForestSpace forest, [8,10])
+           , (Plains1Space plains1, [9,11])
+           , (RuinsSpace ruins, [10,12])
+           , (Fields3Space fields3,[11,13])
+           , (TavernSpace tavern,[12,14])
+           , (Plains2Space plains2,[13,15])
+           , (Woods2Space woods2,[14,16])
+           , (Plains3Space plains3,[15,17])
+           , (Hills2Space hills2,[16,18])
+           , (Fields4Space fields4,[17,19])
+           , (CitySpace city,[18,20])
+           , (Fields5Space  fields5,[19,21])
+           , (Woods3Space woods3,[20,22])
+           , (Plains4Space plains4,[21,23])
+           , (CragsSpace crags,[22,24])
+           , (Fields6Space fields6,[23,1])
+           ]
+           
+calculatePossibleMoves::Int -> Int -> Int -> [Space]
+calculatePossibleMoves dieRoll current former = undefined
 
 
-spaces::[Space]
-spaces = [ChapelSpace chapel
-           , HillsSpace hills1
-           , SentinelSpace sentinel
-           , WoodsSpace woods1
-           , GraveyardSpace graveyard
-           , FieldsSpace fields1
-           , VillageSpace village
-           , FieldsSpace fields2
-           , ForestSpace forest
-           , PlainsSpace plains1
-           , RuinsSpace ruins
-           , FieldsSpace fields3
-           , TavernSpace tavern
-           , PlainsSpace plains2
-           , WoodsSpace woods2
-           , PlainsSpace plains3
-           , HillsSpace hills2
-           , FieldsSpace fields4
-           , CitySpace city
-           , FieldsSpace  fields5
-           , WoodsSpace woods3
-           , PlainsSpace plains4
-           , CragsSpace crags
-           , FieldsSpace fields6]
-
-
-
-
+getPossibleMoves::Int->Int->[Space]
+getPossibleMoves dieRoll current 
+    | dieRoll == 1 =
+       let neighbours = snd $ spaces !! current in
+       List.map (fst . (!!) spaces ) neighbours
+    | otherwise = calculatePossibleMoves dieRoll current current
+   

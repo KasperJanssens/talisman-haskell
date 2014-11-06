@@ -1,30 +1,20 @@
 module Board.BoardTest where
 
-import Board.Board
 import Test.Hspec
-import Control.Monad.State
 import Characters.PlayerCharacter
 import Control.Lens
 
 placingSpec::Spec
 placingSpec = describe "placing the characters" $ do
          it "should place mr ogre in the crags " $ do
-            let charToPlace = view (singular $ each._OgreChieftain) allPlayers
-            "" `shouldBe` ""
-{-         it "should place mr wizard in the graveyard" $ do
-             let charToPlace = Wizard wizard
-             let expectedGraveyard = over players ((:) charToPlace) graveyard
-             let result = execState (do
-                                   place charToPlace)
-                      spaces
-             result `shouldContain` [GraveyardSpace  expectedGraveyard]
+            let tileNumber = view (singular $ each._OgreChieftain.place) allPlayers
+            tileNumber `shouldBe` 23
+         it "should place mr wizard in the graveyard" $ do
+             let tileNumber = view (singular $ each._Wizard.place) allPlayers
+             tileNumber `shouldBe` 5
          it "should place mr thief in the city" $ do
-             let charToPlace = Thief thief
-             let expectedCity =over players ((:) charToPlace) city
-             let result = execState (do
-                                   place charToPlace)
-                      spaces
-             result `shouldContain` [CitySpace  expectedCity]-}
+             let tileNumber =  view (singular $ each._Thief.place) allPlayers
+             tileNumber `shouldBe` 19
 
 
 
