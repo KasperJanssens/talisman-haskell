@@ -1,0 +1,6 @@
+.cabal-sandbox/
+.idea/
+*.iml
+*.swp
+dist/
+cabal.sandbox.config

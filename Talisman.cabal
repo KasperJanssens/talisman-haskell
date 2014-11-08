@@ -1,0 +1,79 @@
+-- The name of the package.
+name:             Talisman 
+
+-- The package version.  See the Haskell package versioning policy (PVP) 
+-- for standards guiding when and how versions should be incremented.
+-- http://www.haskell.org/haskellwiki/Package_versioning_policy
+-- PVP summary:      +-+------- breaking API changes
+--                   | | +----- non-breaking API additions
+--                   | | | +--- code changes with no API change
+version:             0.1.0.0
+
+-- A short (one-line) description of the package.
+synopsis:            Containerschepen en zeetankers
+
+-- A longer description of the package.
+-- description:         
+
+-- The package author(s).
+author:              Kasper
+
+-- An email address to which users can send suggestions, bug reports, and 
+-- patches.
+maintainer:          kasper@amplidata.com
+
+-- A copyright notice.
+-- copyright:           
+
+category:            Development
+
+build-type:          Simple
+
+-- Constraint on the version of Cabal needed to build this package.
+cabal-version:       >=1.8
+
+
+library
+  hs-source-dirs:    src
+  exposed-modules:
+    Adventure,
+    Characters.Alignment,
+    Battle,
+    Board.Board,
+    DungeonMaster,
+    Characters.Follower,
+    Object,
+    Characters.PlayerCharacter,
+    Board.Tile,
+    Board.Locations
+  other-modules:
+  build-depends:       base >=4.6,
+                       random,
+                       mtl,
+                       lens,
+                       transformers
+  ghc-options:         -threaded -O2
+
+test-suite unit-tests
+  default-language:
+   Haskell2010
+  type:
+   exitcode-stdio-1.0
+  hs-source-dirs: src/test
+  main-is: UnitTest.hs 
+  build-depends:       base >= 4.6 ,
+                       tasty,
+                       hspec,
+                       tasty-quickcheck,
+                       tasty-hunit,
+                       tasty-smallcheck,
+                       tasty-ant-xml,
+                       tasty-hspec,
+                       directory,
+                       text,
+                       configurator,
+                       lens,
+                       Talisman
+                       
+  ghc-options:         -threaded
+
