@@ -10,4 +10,7 @@ import Test.Hspec
 import qualified Board.BoardTest as BoardTest
 
 main::IO()
-main= hspec BoardTest.placingSpec
+main= hspec $
+ describe "Unit tests" $ do
+  BoardTest.placingSpec
+  BoardTest.movingSpec

@@ -51,6 +51,7 @@ library
                        random,
                        mtl,
                        lens,
+                       containers,
                        transformers
   ghc-options:         -threaded -O2
 
