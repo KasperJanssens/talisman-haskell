@@ -129,39 +129,42 @@ fields6 = defaultTile 24
 
 type Neighbours=[Int]
 
-spaces::Map Int (Space, Neighbours)
+--test :: Map Int (Space -> Maybe Tile)
+--test = fromList $ zip [1] [preview _ChapelSpace]
+
+spaces::Map Int (((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile), Neighbours)
 spaces = fromList $ zip [1..24]
-           [(ChapelSpace chapel,[2,24])
-           , (Hills1Space hills1,[1,3])
-           , (SentinelSpace sentinel,[2,4])
-           , (Woods1Space woods1, [3,5])
-           , (GraveyardSpace graveyard, [4,6])
-           , (Fields2Space fields1, [5,7])
-           , (VillageSpace village, [6,8])
-           , (Fields2Space fields2, [7,9])
-           , (ForestSpace forest, [8,10])
-           , (Plains1Space plains1, [9,11])
-           , (RuinsSpace ruins, [10,12])
-           , (Fields3Space fields3,[11,13])
-           , (TavernSpace tavern,[12,14])
-           , (Plains2Space plains2,[13,15])
-           , (Woods2Space woods2,[14,16])
-           , (Plains3Space plains3,[15,17])
-           , (Hills2Space hills2,[16,18])
-           , (Fields4Space fields4,[17,19])
-           , (CitySpace city,[18,20])
-           , (Fields5Space  fields5,[19,21])
-           , (Woods3Space woods3,[20,22])
-           , (Plains4Space plains4,[21,23])
-           , (CragsSpace crags,[22,24])
-           , (Fields6Space fields6,[23,1])
+           [((over _ChapelSpace, preview _ChapelSpace),[2,24])
+           , ((over _Hills1Space, preview _Hills1Space),[1,3])
+           , ((over _SentinelSpace, preview _SentinelSpace),[2,4])
+           , ((over _Woods1Space, preview _Woods1Space),[3,5])
+           , ((over _GraveyardSpace, preview _GraveyardSpace),[4,6])
+           , ((over _Fields2Space, preview _Fields2Space),[5,7])
+           , ((over _VillageSpace, preview _VillageSpace),[6,8])
+           , ((over _Fields2Space, preview _Fields2Space),[7,9])
+           , ((over _ForestSpace, preview _ForestSpace),[8,10])
+           , ((over _Plains1Space, preview _Plains1Space),[9,11])
+           , ((over _RuinsSpace, preview _RuinsSpace),[10,12])
+           , ((over _Fields3Space, preview _Fields3Space),[11,13])
+           , ((over _TavernSpace, preview _TavernSpace),[12,14])
+           , ((over _Plains2Space, preview _Plains2Space),[13,15])
+           , ((over _Woods2Space, preview _Woods2Space),[14,16])
+           , ((over _Plains3Space, preview _Plains3Space),[15,17])
+           , ((over _Hills2Space, preview _Hills2Space),[16,18])
+           , ((over _Fields4Space, preview _Fields4Space),[17,19])
+           , ((over _CitySpace, preview _CitySpace),[18,20])
+           , ((over _Fields5Space, preview _Fields5Space),[19,21])
+           , ((over _Woods3Space, preview _Woods3Space),[20,22])
+           , ((over _Plains4Space, preview _Plains4Space),[21,23])
+           , ((over _CragsSpace, preview _CragsSpace),[22,24])
+           , ((over _Fields6Space, preview _Fields6Space),[23,1])
            ]
 
-getMovingOptions::Int -> Int -> [Space]
+getMovingOptions::Int -> Int -> [((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile)]
 getMovingOptions dieRoll = calculatePossibleMoves dieRoll (-1)
 
 
-calculatePossibleMoves::Int -> Int -> Int -> [Space]
+calculatePossibleMoves::Int -> Int -> Int -> [((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile)]
 calculatePossibleMoves stepsLeft former current
   | stepsLeft == 0 = [ fst $ findWithDefault undefined current spaces]
   | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours
