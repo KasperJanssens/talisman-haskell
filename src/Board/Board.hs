@@ -5,7 +5,6 @@ import Control.Lens
 import Characters.Follower
 import Adventure
 import Object
-import Debug.Trace
 import Data.Map
 import qualified Data.List as List
 
@@ -131,7 +130,8 @@ fields6 = defaultTile 24
 type Neighbours=[Int]
 
 spaces::Map Int (Space, Neighbours)
-spaces = fromList $ zip [1..24] [(ChapelSpace chapel,[2,24])
+spaces = fromList $ zip [1..24]
+           [(ChapelSpace chapel,[2,24])
            , (Hills1Space hills1,[1,3])
            , (SentinelSpace sentinel,[2,4])
            , (Woods1Space woods1, [3,5])
@@ -156,18 +156,15 @@ spaces = fromList $ zip [1..24] [(ChapelSpace chapel,[2,24])
            , (CragsSpace crags,[22,24])
            , (Fields6Space fields6,[23,1])
            ]
-           
+
+getMovingOptions::Int -> Int -> [Space]
+getMovingOptions dieRoll = calculatePossibleMoves dieRoll (-1)
+
+
 calculatePossibleMoves::Int -> Int -> Int -> [Space]
-calculatePossibleMoves dieRoll current former
-  | dieRoll == 1 =  List.map (\neighbour -> fst $ findWithDefault 25 neighbour spaces) unvisitedNeighbours
-  | otherwise = undefined
-     where unvisitedNeighbours = List.filter (/= former) $ snd $ findWithDefault 25 current spaces
+calculatePossibleMoves stepsLeft former current
+  | stepsLeft == 0 = [ fst $ findWithDefault undefined current spaces]
+  | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours
+     where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current spaces
 
 
-{-getPossibleMoves::Int->Int->[Space]
-getPossibleMoves dieRoll current 
-    | dieRoll == 1 =
-       let neighbours = snd $ spaces !! current in
-       List.map (fst . (!!) spaces ) neighbours
-    | otherwise = calculatePossibleMoves dieRoll current current-}
-   

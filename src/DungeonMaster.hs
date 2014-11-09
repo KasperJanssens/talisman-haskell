@@ -3,6 +3,7 @@ import Characters.PlayerCharacter
 
 import Control.Monad.Trans.State
 import System.Random
+import Board.Board
 
 type GeneratorState = State StdGen
 
@@ -12,10 +13,16 @@ rollDie = do generator <- get
              put newGenerator
              return value
 
+rollLoadedDieAlways1::GeneratorState Int
+rollLoadedDieAlways1 = return 1
+       
+chooseSpace:: [Space] -> IO Space
+chooseSpace possibleSpaces = return $ head possibleSpaces
 
 
 selectPlayers:: IO [Character]
 selectPlayers = return allPlayers
+
 
 {-putPlayersOnBoard :: IO Board.Board
 putPlayersOnBoard = do
