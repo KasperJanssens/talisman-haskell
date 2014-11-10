@@ -129,17 +129,44 @@ fields6 = defaultTile 24
 
 type Neighbours=[Int]
 
---test :: Map Int (Space -> Maybe Tile)
---test = fromList $ zip [1] [preview _ChapelSpace]
+--test :: Map Int (Space -> Tile)
+--test = fromList $ zip [1] [view  (singular _ChapelSpace)]
 
-spaces::Map Int (((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile), Neighbours)
-spaces = fromList $ zip [1..24]
+spaces::[Space]
+spaces=[ChapelSpace chapel
+       , Hills1Space hills1
+       , SentinelSpace sentinel
+       , Woods1Space woods1
+       , GraveyardSpace graveyard
+       , Fields1Space fields1
+       , VillageSpace village
+       , Fields2Space fields2
+       , ForestSpace forest
+       , Plains1Space plains1
+       , RuinsSpace ruins
+       , Fields3Space fields3
+       , TavernSpace tavern
+       , Plains2Space plains2
+       , Woods2Space woods2
+       , Plains3Space plains3
+       , Hills2Space hills2
+       , Fields4Space fields4
+       , CitySpace city
+       , Fields5Space fields5
+       , Woods3Space woods3
+       , Plains4Space plains4
+       , CragsSpace crags
+       , Fields6Space fields6
+       ]
+
+boardLayout::Map Int (((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile), Neighbours)
+boardLayout = fromList $ zip [1..24]
            [((over _ChapelSpace, preview _ChapelSpace),[2,24])
            , ((over _Hills1Space, preview _Hills1Space),[1,3])
            , ((over _SentinelSpace, preview _SentinelSpace),[2,4])
            , ((over _Woods1Space, preview _Woods1Space),[3,5])
            , ((over _GraveyardSpace, preview _GraveyardSpace),[4,6])
-           , ((over _Fields2Space, preview _Fields2Space),[5,7])
+           , ((over _Fields1Space, preview _Fields1Space),[5,7])
            , ((over _VillageSpace, preview _VillageSpace),[6,8])
            , ((over _Fields2Space, preview _Fields2Space),[7,9])
            , ((over _ForestSpace, preview _ForestSpace),[8,10])
@@ -166,8 +193,8 @@ getMovingOptions dieRoll = calculatePossibleMoves dieRoll (-1)
 
 calculatePossibleMoves::Int -> Int -> Int -> [((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile)]
 calculatePossibleMoves stepsLeft former current
-  | stepsLeft == 0 = [ fst $ findWithDefault undefined current spaces]
+  | stepsLeft == 0 = [ fst $ findWithDefault undefined current boardLayout]
   | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours
-     where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current spaces
+     where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current boardLayout
 
 
