@@ -198,3 +198,4 @@ calculatePossibleMoves stepsLeft former current
      where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current boardLayout
 
 
+

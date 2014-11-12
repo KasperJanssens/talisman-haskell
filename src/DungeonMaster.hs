@@ -2,37 +2,58 @@ module DungeonMaster where
 import Characters.PlayerCharacter
 
 import Control.Monad.Trans.State
-import System.Random
+import Control.Monad.Trans.Class
+import Control.Monad
 import Board.Board
 import Control.Lens
 import Data.Maybe
 
-type GeneratorState = State StdGen
 
-rollDie :: GeneratorState Int
-rollDie = do generator <- get
-             let (value, newGenerator) = randomR (1,6) generator
-             put newGenerator
-             return value
 
-rollLoadedDieAlways1::GeneratorState Int
-rollLoadedDieAlways1 = return 1
+nextRoll:: (Monad m) => StateT [DieRoll] m DieRoll
+nextRoll = do
+    rolls <- get
+    let nextOne = head rolls
+    put $ tail rolls
+    return nextOne
 
-chosenPlayers::[((Player -> Player) -> Character -> Character, Character -> Maybe Player)]
+type DieRoll = Int
+
+type CharacterHandle = ((Player -> Player) -> Character -> Character, Character -> Maybe Player)
+
+chosenPlayers::[CharacterHandle]
 chosenPlayers= [(over _Wizard, preview _Wizard)
                 , (over _OgreChieftain, preview _OgreChieftain)
                 , (over _Thief, preview _Thief)
                 ]
 
---playRound:: IO()
---playRound = do
-    
-handlePlayerMove::Int -> (Character -> Maybe Player) -> ((Player -> Player) -> Character -> Character) -> ()
-handlePlayerMove  dieRoll lookUpPlayerFunc updatePlayerFunc = 
-    let selectedPlayer = head $ catMaybes $ map lookUpPlayerFunc allPlayers
-        currentSpace = (view place) selectedPlayer
-        options = getMovingOptions dieRoll currentSpace
-        lookUpTileFunc = snd $ head options
-        selectedTile = head $ catMaybes $ map lookUpTileFunc spaces
-        newTileNumber = view tileNumber selectedTile
-    in  ()
+getSelectedPlayerPosition:: (Character -> Maybe Player) -> State [Character] Int
+getSelectedPlayerPosition lookUpPlayerFunc= do
+    players <- get
+    return $ view place $ head $ mapMaybe lookUpPlayerFunc players
+
+updatePlayerPosition:: ((Player -> Player) -> Character -> Character) -> Int -> State [Character] ()
+updatePlayerPosition updatePlayerFunc position = do
+    players <- get
+    let newPlayers = map (updatePlayerFunc (set place position)) players
+    put newPlayers
+
+
+playRound::StateT [DieRoll] (State [Character]) ()
+playRound = foldM_
+      (\_ characterHandle -> do
+         dieRoll <- nextRoll
+         lift $ handlePlayerMove dieRoll characterHandle)
+    () chosenPlayers
+
+
+handlePlayerMove::Int -> CharacterHandle -> State [Character] ()
+handlePlayerMove  dieRoll (updatePlayerFunc,lookUpPlayerFunc) = do
+    selectedPlayerPosition <- getSelectedPlayerPosition lookUpPlayerFunc
+    let options = getMovingOptions dieRoll selectedPlayerPosition
+    let lookUpTileFunc = snd $ head options
+    let selectedTile = head $ mapMaybe lookUpTileFunc spaces
+    let newTileNumber = view tileNumber selectedTile
+    updatePlayerPosition updatePlayerFunc newTileNumber
+
+
