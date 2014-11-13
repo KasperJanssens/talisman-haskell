@@ -23,10 +23,9 @@ generate10kDieRolls numberOfDieRolls generator = evalState ( replicateM numberOf
 roundSpec::Spec
 roundSpec= describe "Dungeon master" $ do
             it "should be able to play a round" $ do
-              --  let generator = mkStdGen 0
-                --let dieRolls = generate10kDieRolls 10000 generator
+                let selectTileFunc tiles = return $ head tiles
                 let dieRolls = [6,6,4]
-                let newPlayers =  execState (runStateT DungeonMaster.playRound dieRolls) allPlayers
+                newPlayers <- execStateT (runStateT (DungeonMaster.playRound DungeonMaster.chosenPlayers selectTileFunc) dieRolls) allPlayers
                 let ogresPlace = view (singular $ each._OgreChieftain.place) newPlayers
                 ogresPlace `shouldBe` 17
                 let wizardsPlace = view (singular $ each._Wizard.place) newPlayers

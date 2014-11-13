@@ -129,9 +129,6 @@ fields6 = defaultTile 24
 
 type Neighbours=[Int]
 
---test :: Map Int (Space -> Tile)
---test = fromList $ zip [1] [view  (singular _ChapelSpace)]
-
 spaces::[Space]
 spaces=[ChapelSpace chapel
        , Hills1Space hills1

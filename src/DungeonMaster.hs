@@ -4,11 +4,10 @@ import Characters.PlayerCharacter
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Class
 import Control.Monad
+import Control.Monad.IO.Class
 import Board.Board
 import Control.Lens
 import Data.Maybe
-
-
 
 nextRoll:: (Monad m) => StateT [DieRoll] m DieRoll
 nextRoll = do
@@ -27,32 +26,32 @@ chosenPlayers= [(over _Wizard, preview _Wizard)
                 , (over _Thief, preview _Thief)
                 ]
 
-getSelectedPlayerPosition:: (Character -> Maybe Player) -> State [Character] Int
+getSelectedPlayerPosition:: (Character -> Maybe Player) -> StateT [Character] IO Int
 getSelectedPlayerPosition lookUpPlayerFunc= do
     players <- get
     return $ view place $ head $ mapMaybe lookUpPlayerFunc players
 
-updatePlayerPosition:: ((Player -> Player) -> Character -> Character) -> Int -> State [Character] ()
+updatePlayerPosition:: ((Player -> Player) -> Character -> Character) -> Int -> StateT [Character] IO ()
 updatePlayerPosition updatePlayerFunc position = do
     players <- get
     let newPlayers = map (updatePlayerFunc (set place position)) players
     put newPlayers
 
 
-playRound::StateT [DieRoll] (State [Character]) ()
-playRound = foldM_
+playRound::[CharacterHandle] -> ([Tile] -> IO Tile) -> StateT [DieRoll] (StateT [Character] IO) ()
+playRound currentPlayers selectTileFunc = foldM_
       (\_ characterHandle -> do
          dieRoll <- nextRoll
-         lift $ handlePlayerMove dieRoll characterHandle)
-    () chosenPlayers
+         lift $ handlePlayerMove selectTileFunc dieRoll characterHandle)
+    () currentPlayers
 
 
-handlePlayerMove::Int -> CharacterHandle -> State [Character] ()
-handlePlayerMove  dieRoll (updatePlayerFunc,lookUpPlayerFunc) = do
+handlePlayerMove::([Tile] -> IO Tile) -> Int -> CharacterHandle -> StateT [Character] IO ()
+handlePlayerMove selectTileFunc dieRoll (updatePlayerFunc,lookUpPlayerFunc) = do
     selectedPlayerPosition <- getSelectedPlayerPosition lookUpPlayerFunc
     let options = getMovingOptions dieRoll selectedPlayerPosition
     let lookUpTileFunc = snd $ head options
-    let selectedTile = head $ mapMaybe lookUpTileFunc spaces
+    selectedTile <- liftIO $ selectTileFunc $ mapMaybe lookUpTileFunc spaces
     let newTileNumber = view tileNumber selectedTile
     updatePlayerPosition updatePlayerFunc newTileNumber
 
