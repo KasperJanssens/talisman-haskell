@@ -32,10 +32,3 @@ fightStrength = fight strength
 
 fightCraft:: (HasCraft a, Living a) =>  (a,a) -> State StdGen (a,a)
 fightCraft = fight craft
-
-{-fight::(Living a) =>StdGen -> (a -> Int) ->  (a, a) -> (a,a)
-fight gen attribute (attacker, defender)  | randomAttack + attribute attacker > randomDefend + attribute defender = (attacker,loseLife defender)
-                                          | randomAttack + attribute attacker == randomDefend + attribute defender = (attacker, defender)
-                                          | otherwise = (loseLife attacker, defender)
-                                          where randomAttack = fst $ random gen
-                                                randomDefend = fst $ random gen-}

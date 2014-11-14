@@ -5,6 +5,7 @@ import Characters.Follower
 import Characters.Alignment
 import Control.Lens
 
+
 data Player = Player {
   __strength::Int,
   __craft::Int,
