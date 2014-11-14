@@ -3,4 +3,6 @@
 *.iml
 *.swp
 dist/
+lib/
+*.orig
 cabal.sandbox.config

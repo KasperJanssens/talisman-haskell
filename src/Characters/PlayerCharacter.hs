@@ -44,7 +44,7 @@ class HasCraft a where
 
 data Character =  OgreChieftain Player
               | Thief Player
-              | Wizard Player
+              | Wizard Player deriving (Show)
 
 makeLenses ''Character
 
