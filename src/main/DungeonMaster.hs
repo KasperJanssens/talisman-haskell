@@ -22,10 +22,22 @@ type DieRoll = Int
 chosenPlayers::[ReifiedPrism' Character Player]
 chosenPlayers = [Prism _Wizard, Prism _OgreChieftain, Prism _Thief]
 
+getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
+getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
+
+getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
+getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
+
+--getCharacterPrism::Character -> [ReifiedPrism' Character Player] -> ReifiedPrism' Character Player
+--getCharacterPrism char prisms =  foldl (\elem )
+
+
+--foldl (\acc elem -> if isJust $ preview (runPrism elem) char ) [] prisms
+
 getSelectedPlayerPosition:: ReifiedPrism' Character Player -> StateT [Character] IO Int
 getSelectedPlayerPosition characterPrism= do
     players <- get
-    return $ view place $ head $ mapMaybe (preview $ runPrism characterPrism) players
+    return $ view place $ getPlayer characterPrism players
 
 updatePlayerPosition:: ReifiedPrism' Character Player -> Int -> StateT [Character] IO ()
 updatePlayerPosition characterPrism position = do
@@ -36,9 +48,12 @@ updatePlayerPosition characterPrism position = do
 
 playRound::[ReifiedPrism' Character Player] -> ([Tile] -> IO Tile) -> StateT [DieRoll] (StateT [Character] IO) ()
 playRound currentPlayers selectTileFunc = foldM_
-      (\_ characterHandle -> do
+      (\_ characterPrism -> do
          dieRoll <- nextRoll
-         _newPlace <- lift $ handlePlayerMove selectTileFunc dieRoll characterHandle
+         _newPlace <- lift $ handlePlayerMove selectTileFunc dieRoll characterPrism
+         currentChar <- lift $ do
+             currentPlayers <- get
+             return $ getCharacter characterPrism currentPlayers
          return ())
     () currentPlayers
 
@@ -47,8 +62,8 @@ handlePlayerMove::([Tile] -> IO Tile) -> Int -> ReifiedPrism' Character Player->
 handlePlayerMove selectTileFunc dieRoll characterPrism = do
     selectedPlayerPosition <- getSelectedPlayerPosition characterPrism
     let options = getMovingOptions dieRoll selectedPlayerPosition
-    let lookUpTileFunc = snd $ head options
-    selectedTile <- liftIO $ selectTileFunc $ mapMaybe lookUpTileFunc spaces
+    let lookUpTilePrism = head options
+    selectedTile <- liftIO $ selectTileFunc $ mapMaybe (preview $ runPrism lookUpTilePrism)spaces
     let newTileNumber = view tileNumber selectedTile
     updatePlayerPosition characterPrism newTileNumber
     return newTileNumber

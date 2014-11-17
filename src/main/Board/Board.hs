@@ -2,11 +2,13 @@
 {-# LANGUAGE RankNTypes #-}
 module Board.Board where
 import Control.Lens
+import Control.Lens.Reified
 import Characters.Follower
 import Adventure
 import Object
 import Data.Map
 import qualified Data.List as List
+
 
 data Tile = Tile {
   _tileNumber::Int,
@@ -156,43 +158,40 @@ spaces=[ChapelSpace chapel
        , Fields6Space fields6
        ]
 
-boardLayout::Map Int (((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile), Neighbours)
+boardLayout::Map Int (ReifiedPrism' Space Tile, Neighbours)
 boardLayout = fromList $ zip [1..24]
-           [((over _ChapelSpace, preview _ChapelSpace),[2,24])
-           , ((over _Hills1Space, preview _Hills1Space),[1,3])
-           , ((over _SentinelSpace, preview _SentinelSpace),[2,4])
-           , ((over _Woods1Space, preview _Woods1Space),[3,5])
-           , ((over _GraveyardSpace, preview _GraveyardSpace),[4,6])
-           , ((over _Fields1Space, preview _Fields1Space),[5,7])
-           , ((over _VillageSpace, preview _VillageSpace),[6,8])
-           , ((over _Fields2Space, preview _Fields2Space),[7,9])
-           , ((over _ForestSpace, preview _ForestSpace),[8,10])
-           , ((over _Plains1Space, preview _Plains1Space),[9,11])
-           , ((over _RuinsSpace, preview _RuinsSpace),[10,12])
-           , ((over _Fields3Space, preview _Fields3Space),[11,13])
-           , ((over _TavernSpace, preview _TavernSpace),[12,14])
-           , ((over _Plains2Space, preview _Plains2Space),[13,15])
-           , ((over _Woods2Space, preview _Woods2Space),[14,16])
-           , ((over _Plains3Space, preview _Plains3Space),[15,17])
-           , ((over _Hills2Space, preview _Hills2Space),[16,18])
-           , ((over _Fields4Space, preview _Fields4Space),[17,19])
-           , ((over _CitySpace, preview _CitySpace),[18,20])
-           , ((over _Fields5Space, preview _Fields5Space),[19,21])
-           , ((over _Woods3Space, preview _Woods3Space),[20,22])
-           , ((over _Plains4Space, preview _Plains4Space),[21,23])
-           , ((over _CragsSpace, preview _CragsSpace),[22,24])
-           , ((over _Fields6Space, preview _Fields6Space),[23,1])
+           [(Prism _ChapelSpace,[2,24])
+           , (Prism _Hills1Space,[1,3])
+           , (Prism _SentinelSpace,[2,4])
+           , (Prism _Woods1Space,[3,5])
+           , (Prism _GraveyardSpace,[4,6])
+           , (Prism _Fields1Space,[5,7])
+           , (Prism _VillageSpace,[6,8])
+           , (Prism _Fields2Space,[7,9])
+           , (Prism _ForestSpace,[8,10])
+           , (Prism _Plains1Space,[9,11])
+           , (Prism _RuinsSpace,[10,12])
+           , (Prism _Fields3Space,[11,13])
+           , (Prism _TavernSpace,[12,14])
+           , (Prism _Plains2Space,[13,15])
+           , (Prism _Woods2Space,[14,16])
+           , (Prism _Plains3Space,[15,17])
+           , (Prism _Hills2Space,[16,18])
+           , (Prism _Fields4Space,[17,19])
+           , (Prism _CitySpace,[18,20])
+           , (Prism _Fields5Space,[19,21])
+           , (Prism _Woods3Space,[20,22])
+           , (Prism _Plains4Space,[21,23])
+           , (Prism _CragsSpace,[22,24])
+           , (Prism _Fields6Space,[23,1])
            ]
 
-getMovingOptions::Int -> Int -> [((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile)]
+getMovingOptions::Int -> Int -> [ReifiedPrism' Space Tile]
 getMovingOptions dieRoll = calculatePossibleMoves dieRoll (-1)
 
 
-calculatePossibleMoves::Int -> Int -> Int -> [((Tile -> Tile) -> Space -> Space, Space -> Maybe Tile)]
+calculatePossibleMoves::Int -> Int -> Int -> [ReifiedPrism' Space Tile]
 calculatePossibleMoves stepsLeft former current
   | stepsLeft == 0 = [ fst $ findWithDefault undefined current boardLayout]
   | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours
      where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current boardLayout
-
-
-
