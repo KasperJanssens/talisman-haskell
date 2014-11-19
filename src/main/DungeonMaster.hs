@@ -9,6 +9,7 @@ import Board.Board
 import Control.Lens
 import Control.Lens.Reified
 import Data.Maybe
+import Data.List as List
 
 nextRoll:: (Monad m) => StateT [DieRoll] m DieRoll
 nextRoll = do
@@ -22,17 +23,6 @@ type DieRoll = Int
 chosenPlayers::[ReifiedPrism' Character Player]
 chosenPlayers = [Prism _Wizard, Prism _OgreChieftain, Prism _Thief]
 
-getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
-getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
-
-getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
-getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
-
---getCharacterPrism::Character -> [ReifiedPrism' Character Player] -> ReifiedPrism' Character Player
---getCharacterPrism char prisms =  foldl (\elem )
-
-
---foldl (\acc elem -> if isJust $ preview (runPrism elem) char ) [] prisms
 
 getSelectedPlayerPosition:: ReifiedPrism' Character Player -> StateT [Character] IO Int
 getSelectedPlayerPosition characterPrism= do
@@ -45,20 +35,31 @@ updatePlayerPosition characterPrism position = do
     let newPlayers = map (over (runPrism characterPrism) (set place position)) players
     put newPlayers
 
+getOtherPlayersInSamePosition::ReifiedPrism' Character Player -> StateT [Character] IO [ReifiedPrism' Character Player]
+getOtherPlayersInSamePosition curPlayerPrism = do
+    currentPlayerPosition <- getSelectedPlayerPosition curPlayerPrism
+    currentPlayers <- get
+    let currentChar  = getCharacter curPlayerPrism currentPlayers
+    let otherPlayers = List.delete currentChar currentPlayers
+    let otherPrisms  = List.map getPrism otherPlayers
+    foldM (\acc prism -> do
+                           otherPlayerPosition <- getSelectedPlayerPosition prism
+                           case () of
+                               _ | otherPlayerPosition == currentPlayerPosition -> return $ prism:acc
+                                 | otherwise                                    -> return acc
+                           )
+          [] otherPrisms
 
 playRound::[ReifiedPrism' Character Player] -> ([Tile] -> IO Tile) -> StateT [DieRoll] (StateT [Character] IO) ()
 playRound currentPlayers selectTileFunc = foldM_
       (\_ characterPrism -> do
          dieRoll <- nextRoll
-         _newPlace <- lift $ handlePlayerMove selectTileFunc dieRoll characterPrism
-         currentChar <- lift $ do
-             currentPlayers <- get
-             return $ getCharacter characterPrism currentPlayers
+         lift $ handlePlayerMove selectTileFunc dieRoll characterPrism
          return ())
     () currentPlayers
 
 
-handlePlayerMove::([Tile] -> IO Tile) -> Int -> ReifiedPrism' Character Player-> StateT [Character] IO Int
+handlePlayerMove::([Tile] -> IO Tile) -> Int -> ReifiedPrism' Character Player-> StateT [Character] IO ()
 handlePlayerMove selectTileFunc dieRoll characterPrism = do
     selectedPlayerPosition <- getSelectedPlayerPosition characterPrism
     let options = getMovingOptions dieRoll selectedPlayerPosition
@@ -66,6 +67,6 @@ handlePlayerMove selectTileFunc dieRoll characterPrism = do
     selectedTile <- liftIO $ selectTileFunc $ mapMaybe (preview $ runPrism lookUpTilePrism)spaces
     let newTileNumber = view tileNumber selectedTile
     updatePlayerPosition characterPrism newTileNumber
-    return newTileNumber
+
 
 

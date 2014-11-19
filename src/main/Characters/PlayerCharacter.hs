@@ -4,6 +4,7 @@ import Object
 import Characters.Follower
 import Characters.Alignment
 import Control.Lens
+import Data.Maybe
 
 
 data Player = Player {
@@ -44,7 +45,7 @@ class HasCraft a where
 
 data Character =  OgreChieftain Player
               | Thief Player
-              | Wizard Player deriving (Show)
+              | Wizard Player deriving (Show, Eq)
 
 makeLenses ''Character
 
@@ -88,6 +89,17 @@ thief = Player {
   _alignment=Neutral,
   _place=19
 }
+
+getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
+getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
+
+getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
+getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
+
+getPrism::Character -> ReifiedPrism' Character Player
+getPrism (Thief _ ) = Prism _Thief
+getPrism (Wizard _) = Prism _Wizard
+getPrism (OgreChieftain _) = Prism _OgreChieftain
 
 allPlayers::[Character]
 allPlayers=[OgreChieftain ogreChieftain

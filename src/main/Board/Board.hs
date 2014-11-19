@@ -27,9 +27,6 @@ defaultTile number =  Tile {
   _adventures = []
 }
 
-
-
-
 data Space = Fields1Space Tile
   | Fields2Space Tile
   | Fields3Space Tile
