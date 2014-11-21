@@ -5,6 +5,7 @@ import Characters.Follower
 import Characters.Alignment
 import Control.Lens
 import Data.Maybe
+import Board.Board
 
 
 data Player = Player {
@@ -43,9 +44,23 @@ class HasStrength a where
 class HasCraft a where
     craft::a->Int
 
-data Character =  OgreChieftain Player
-              | Thief Player
-              | Wizard Player deriving (Show, Eq)
+type SelectTileFunc = [Tile] -> IO Tile
+
+data Character =  OgreChieftain Player SelectTileFunc
+              | Thief Player SelectTileFunc
+              | Wizard Player SelectTileFunc
+
+instance Show Character where
+  show (OgreChieftain player _) = show player
+  show (Wizard player _) = show player
+  show (Thief player _) = show player
+
+instance Eq Character where
+  (==) (OgreChieftain player1 _) (OgreChieftain player2 _) = player1 == player2
+  (==) (Wizard player1 _) (Wizard player2 _ ) = player1 == player2
+  (==) (Thief player1 _) (Thief player2 _) = player1 == player2
+  (==)  _  _ = False
+
 
 makeLenses ''Character
 
@@ -96,12 +111,12 @@ getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPr
 getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
 getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
 
-getPrism::Character -> ReifiedPrism' Character Player
-getPrism (Thief _ ) = Prism _Thief
-getPrism (Wizard _) = Prism _Wizard
-getPrism (OgreChieftain _) = Prism _OgreChieftain
+getPrism::Character -> ReifiedPrism' Character (Player, SelectTileFunc)
+getPrism (Thief _ _ ) = Prism _Thief
+getPrism (Wizard _ _ ) = Prism _Wizard
+getPrism (OgreChieftain _ _) = Prism _OgreChieftain
 
-allPlayers::[Character]
+allPlayers::[SelectTileFunc -> Character]
 allPlayers=[OgreChieftain ogreChieftain
           , Wizard wizard
           , Thief thief

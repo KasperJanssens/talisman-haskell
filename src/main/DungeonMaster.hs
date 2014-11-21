@@ -20,7 +20,7 @@ nextRoll = do
 
 type DieRoll = Int
 
-chosenPlayers::[ReifiedPrism' Character Player]
+chosenPlayers::[ReifiedPrism' Character (Player, SelectTileFunc)]
 chosenPlayers = [Prism _Wizard, Prism _OgreChieftain, Prism _Thief]
 
 
@@ -35,7 +35,7 @@ updatePlayerPosition characterPrism position = do
     let newPlayers = map (over (runPrism characterPrism) (set place position)) players
     put newPlayers
 
-getOtherPlayersInSamePosition::ReifiedPrism' Character Player -> StateT [Character] IO [ReifiedPrism' Character Player]
+getOtherPlayersInSamePosition::ReifiedPrism' Character (Player, SelectTileFunc) -> StateT [Character] IO [ReifiedPrism' Character (Player, SelectTileFunc)]
 getOtherPlayersInSamePosition curPlayerPrism = do
     currentPlayerPosition <- getSelectedPlayerPosition curPlayerPrism
     currentPlayers <- get
@@ -67,6 +67,7 @@ handlePlayerMove selectTileFunc dieRoll characterPrism = do
     selectedTile <- liftIO $ selectTileFunc $ mapMaybe (preview $ runPrism lookUpTilePrism)spaces
     let newTileNumber = view tileNumber selectedTile
     updatePlayerPosition characterPrism newTileNumber
+
 
 
 
