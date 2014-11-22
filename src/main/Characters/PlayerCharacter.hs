@@ -105,11 +105,11 @@ thief = Player {
   _place=19
 }
 
-getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
-getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
+getPlayer::ReifiedPrism' Character (Player, SelectTileFunc) -> [Character] -> Player
+getPlayer characterPrism chars = fst $ head $ mapMaybe (preview $ runPrism characterPrism) chars
 
-getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
-getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
+getCharacter::ReifiedPrism' Character (Player, SelectTileFunc) -> [Character] -> Character
+getCharacter prism chars = review (runPrism prism) $ (getPlayer prism chars, return.head)
 
 getPrism::Character -> ReifiedPrism' Character (Player, SelectTileFunc)
 getPrism (Thief _ _ ) = Prism _Thief

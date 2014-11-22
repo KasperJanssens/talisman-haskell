@@ -24,15 +24,15 @@ chosenPlayers::[ReifiedPrism' Character (Player, SelectTileFunc)]
 chosenPlayers = [Prism _Wizard, Prism _OgreChieftain, Prism _Thief]
 
 
-getSelectedPlayerPosition:: ReifiedPrism' Character Player -> StateT [Character] IO Int
+getSelectedPlayerPosition:: ReifiedPrism' Character (Player, SelectTileFunc) -> StateT [Character] IO Int
 getSelectedPlayerPosition characterPrism= do
     players <- get
     return $ view place $ getPlayer characterPrism players
 
-updatePlayerPosition:: ReifiedPrism' Character Player -> Int -> StateT [Character] IO ()
+updatePlayerPosition:: ReifiedPrism' Character (Player, SelectTileFunc) -> Int -> StateT [Character] IO ()
 updatePlayerPosition characterPrism position = do
     players <- get
-    let newPlayers = map (over (runPrism characterPrism) (set place position)) players
+    let newPlayers = map (over (runPrism characterPrism) (\(player, func) -> (set place position $ player,func))) players
     put newPlayers
 
 getOtherPlayersInSamePosition::ReifiedPrism' Character (Player, SelectTileFunc) -> StateT [Character] IO [ReifiedPrism' Character (Player, SelectTileFunc)]
@@ -50,7 +50,7 @@ getOtherPlayersInSamePosition curPlayerPrism = do
                            )
           [] otherPrisms
 
-playRound::[ReifiedPrism' Character Player] -> ([Tile] -> IO Tile) -> StateT [DieRoll] (StateT [Character] IO) ()
+playRound::[ReifiedPrism' Character (Player, SelectTileFunc)] -> ([Tile] -> IO Tile) -> StateT [DieRoll] (StateT [Character] IO) ()
 playRound currentPlayers selectTileFunc = foldM_
       (\_ characterPrism -> do
          dieRoll <- nextRoll
@@ -59,7 +59,7 @@ playRound currentPlayers selectTileFunc = foldM_
     () currentPlayers
 
 
-handlePlayerMove::([Tile] -> IO Tile) -> Int -> ReifiedPrism' Character Player-> StateT [Character] IO ()
+handlePlayerMove::([Tile] -> IO Tile) -> Int -> ReifiedPrism' Character (Player, SelectTileFunc)-> StateT [Character] IO ()
 handlePlayerMove selectTileFunc dieRoll characterPrism = do
     selectedPlayerPosition <- getSelectedPlayerPosition characterPrism
     let options = getMovingOptions dieRoll selectedPlayerPosition
