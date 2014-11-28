@@ -75,7 +75,7 @@ wizard = Player {
   __life=4,
   _objects=[],
   _followers=[],
-  _alignment=Evil,
+_alignment=Evil,
   _place=5
 }
 
@@ -109,7 +109,7 @@ getPlayer::ReifiedPrism' Character (Player, SelectTileFunc) -> [Character] -> Pl
 getPlayer characterPrism chars = fst $ head $ mapMaybe (preview $ runPrism characterPrism) chars
 
 getCharacter::ReifiedPrism' Character (Player, SelectTileFunc) -> [Character] -> Character
-getCharacter prism chars = review (runPrism prism) $ (getPlayer prism chars, return.head)
+getCharacter prism chars = review (runPrism prism) $ (getPlayer prism chars, undefined)
 
 getPrism::Character -> ReifiedPrism' Character (Player, SelectTileFunc)
 getPrism (Thief _ _ ) = Prism _Thief

@@ -3,20 +3,20 @@ module Board.BoardTest where
 import Test.Hspec
 import Characters.PlayerCharacter
 import Control.Lens
-import Control.Lens.Reified
 import Board.Board
 import Data.Maybe
+import Control.Applicative
 
 placingSpec::Spec
 placingSpec = describe "placing the characters" $ do
          it "should place mr ogre in the crags " $ do
-            let currentPlace = view (singular $ each._OgreChieftain.place) allPlayers
+            let currentPlace = view (singular $ each._OgreChieftain._1.place) $ allPlayers <*> (pure $ return.head)
             currentPlace `shouldBe` 23
          it "should place mr wizard in the graveyard" $ do
-             let currentPlace = view (singular $ each._Wizard.place) allPlayers
+             let currentPlace = view (singular $ each._Wizard._1.place) $ allPlayers <*> (pure $ return.head)
              currentPlace `shouldBe` 5
          it "should place mr thief in the city" $ do
-             let currentPlace =  view (singular $ each._Thief.place) allPlayers
+             let currentPlace =  view (singular $ each._Thief._1.place) $ allPlayers <*> (pure $ return.head)
              currentPlace `shouldBe` 19
 
 lookupTiles::[ReifiedPrism' Space Tile] -> [Tile]
