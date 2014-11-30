@@ -67,7 +67,7 @@ handlePlayerMove dieRoll characterPrism = do
     selectedPlayerPosition <- getSelectedPlayerPosition characterPrism
     let reachableTiles = getMovingOptions dieRoll selectedPlayerPosition
     selectedTile <- liftIO $  selectTile reachableTiles
-    let newTileNumber = view tileNumber selectedTile
+    let newTileNumber = selectedTile ^. tileNumber
     updatePlayerPosition characterPrism newTileNumber
 
 

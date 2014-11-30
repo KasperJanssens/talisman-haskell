@@ -1,8 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RankNTypes #-}
 module Board.Board where
-import Control.Lens
-import Control.Lens.Reified
+import qualified Control.Lens as Lens
 import Characters.Follower
 import Adventure
 import Object
@@ -18,7 +17,7 @@ data Tile = Tile {
   _adventures::[Adventure]
 } deriving (Eq, Ord, Show)
 
-makeLenses ''Tile
+Lens.makeLenses ''Tile
 
 defaultTile::Int -> Tile
 defaultTile number =  Tile {
@@ -56,7 +55,7 @@ data Space = Fields1Space Tile
   | VillageSpace Tile
   | CragsSpace Tile deriving (Eq, Ord, Show)
 
-makePrisms ''Space
+Lens.makePrisms ''Space
 
 
 chapel:: Tile
@@ -160,43 +159,42 @@ spaces=[ChapelSpace chapel
        , Fields6Space fields6
        ]
 
-boardLayout::Map.Map Int (ReifiedPrism' Space Tile, Neighbours)
+boardLayout::Map.Map Int (Lens.ReifiedPrism' Space Tile, Neighbours)
 boardLayout = Map.fromList $ zip [1..24]
-           [(Prism _ChapelSpace,[2,24])
-           , (Prism _Hills1Space,[1,3])
-           , (Prism _SentinelSpace,[2,4])
-           , (Prism _Woods1Space,[3,5])
-           , (Prism _GraveyardSpace,[4,6])
-           , (Prism _Fields1Space,[5,7])
-           , (Prism _VillageSpace,[6,8])
-           , (Prism _Fields2Space,[7,9])
-           , (Prism _ForestSpace,[8,10])
-           , (Prism _Plains1Space,[9,11])
-           , (Prism _RuinsSpace,[10,12])
-           , (Prism _Fields3Space,[11,13])
-           , (Prism _TavernSpace,[12,14])
-           , (Prism _Plains2Space,[13,15])
-           , (Prism _Woods2Space,[14,16])
-           , (Prism _Plains3Space,[15,17])
-           , (Prism _Hills2Space,[16,18])
-           , (Prism _Fields4Space,[17,19])
-           , (Prism _CitySpace,[18,20])
-           , (Prism _Fields5Space,[19,21])
-           , (Prism _Woods3Space,[20,22])
-           , (Prism _Plains4Space,[21,23])
-           , (Prism _CragsSpace,[22,24])
-           , (Prism _Fields6Space,[23,1])
+           [(Lens.Prism _ChapelSpace,[2,24])
+           , (Lens.Prism _Hills1Space,[1,3])
+           , (Lens.Prism _SentinelSpace,[2,4])
+           , (Lens.Prism _Woods1Space,[3,5])
+           , (Lens.Prism _GraveyardSpace,[4,6])
+           , (Lens.Prism _Fields1Space,[5,7])
+           , (Lens.Prism _VillageSpace,[6,8])
+           , (Lens.Prism _Fields2Space,[7,9])
+           , (Lens.Prism _ForestSpace,[8,10])
+           , (Lens.Prism _Plains1Space,[9,11])
+           , (Lens.Prism _RuinsSpace,[10,12])
+           , (Lens.Prism _Fields3Space,[11,13])
+           , (Lens.Prism _TavernSpace,[12,14])
+           , (Lens.Prism _Plains2Space,[13,15])
+           , (Lens.Prism _Woods2Space,[14,16])
+           , (Lens.Prism _Plains3Space,[15,17])
+           , (Lens.Prism _Hills2Space,[16,18])
+           , (Lens.Prism _Fields4Space,[17,19])
+           , (Lens.Prism _CitySpace,[18,20])
+           , (Lens.Prism _Fields5Space,[19,21])
+           , (Lens.Prism _Woods3Space,[20,22])
+           , (Lens.Prism _Plains4Space,[21,23])
+           , (Lens.Prism _CragsSpace,[22,24])
+           , (Lens.Prism _Fields6Space,[23,1])
            ]
 
 
 getMovingOptions::Int -> Int -> [Tile]
 getMovingOptions dieRoll currentSpace =
-     List.foldl (\tiles prism -> let matchingTiles= Maybe.mapMaybe (preview.runPrism $ prism) spaces
+     List.foldl (\tiles prism -> let matchingTiles= Maybe.mapMaybe (Lens.preview . Lens.runPrism $ prism) spaces
                                  in tiles ++ matchingTiles) [] spacePrisms
      where spacePrisms = calculatePossibleMoves dieRoll (-1) currentSpace
 
-
-calculatePossibleMoves::Int -> Int -> Int -> [ReifiedPrism' Space Tile]
+calculatePossibleMoves::Int -> Int -> Int -> [Lens.ReifiedPrism' Space Tile]
 calculatePossibleMoves stepsLeft former current
   | stepsLeft == 0 = [ fst $ Map.findWithDefault undefined current boardLayout]
   | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours

@@ -138,7 +138,8 @@ getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
 getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
 
 getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
-getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
+-- getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
+getCharacter prism chars = runPrism prism # getPlayer prism chars
 
 getPrism::Character -> ReifiedPrism' Character Player
 getPrism (Thief _ ) = Prism _Thief
