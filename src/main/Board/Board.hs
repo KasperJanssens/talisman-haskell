@@ -6,7 +6,8 @@ import Control.Lens.Reified
 import Characters.Follower
 import Adventure
 import Object
-import Data.Map
+import qualified Data.Map as Map
+import qualified Data.Maybe as Maybe
 import qualified Data.List as List
 
 
@@ -26,6 +27,9 @@ defaultTile number =  Tile {
   _freeObjects=[],
   _adventures = []
 }
+
+
+
 
 data Space = Fields1Space Tile
   | Fields2Space Tile
@@ -53,6 +57,7 @@ data Space = Fields1Space Tile
   | CragsSpace Tile deriving (Eq, Ord, Show)
 
 makePrisms ''Space
+
 
 chapel:: Tile
 chapel = defaultTile 1
@@ -155,8 +160,8 @@ spaces=[ChapelSpace chapel
        , Fields6Space fields6
        ]
 
-boardLayout::Map Int (ReifiedPrism' Space Tile, Neighbours)
-boardLayout = fromList $ zip [1..24]
+boardLayout::Map.Map Int (ReifiedPrism' Space Tile, Neighbours)
+boardLayout = Map.fromList $ zip [1..24]
            [(Prism _ChapelSpace,[2,24])
            , (Prism _Hills1Space,[1,3])
            , (Prism _SentinelSpace,[2,4])
@@ -183,12 +188,16 @@ boardLayout = fromList $ zip [1..24]
            , (Prism _Fields6Space,[23,1])
            ]
 
-getMovingOptions::Int -> Int -> [ReifiedPrism' Space Tile]
-getMovingOptions dieRoll = calculatePossibleMoves dieRoll (-1)
+
+getMovingOptions::Int -> Int -> [Tile]
+getMovingOptions dieRoll currentSpace =
+     List.foldl (\tiles prism -> let matchingTiles= Maybe.mapMaybe (preview.runPrism $ prism) spaces
+                                 in tiles ++ matchingTiles) [] spacePrisms
+     where spacePrisms = calculatePossibleMoves dieRoll (-1) currentSpace
 
 
 calculatePossibleMoves::Int -> Int -> Int -> [ReifiedPrism' Space Tile]
 calculatePossibleMoves stepsLeft former current
-  | stepsLeft == 0 = [ fst $ findWithDefault undefined current boardLayout]
+  | stepsLeft == 0 = [ fst $ Map.findWithDefault undefined current boardLayout]
   | otherwise = List.concatMap (calculatePossibleMoves (stepsLeft - 1) current) directNeighbours
-     where directNeighbours = List.filter (/= former) $ snd $ findWithDefault undefined current boardLayout
+     where directNeighbours = List.filter (/= former) $ snd $ Map.findWithDefault undefined current boardLayout

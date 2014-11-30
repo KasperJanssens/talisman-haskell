@@ -50,6 +50,7 @@ library
                        random,
                        mtl,
                        lens,
+                       stringbuilder,
                        containers,
                        transformers
   ghc-options:         -threaded -O2
@@ -60,7 +61,7 @@ test-suite unit-tests
   type:
    exitcode-stdio-1.0
   hs-source-dirs: src/test
-  main-is: UnitTest.hs 
+  main-is: UnitTest.hs
   build-depends:       base >= 4.6 ,
                        tasty,
                        hspec,
