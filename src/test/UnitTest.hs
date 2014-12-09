@@ -17,3 +17,4 @@ main= hspec $
   BoardTest.movingSpec
   DungeonMasterTest.roundSpec
   DungeonMasterTest.playersInPosition
+  DungeonMasterTest.fightSpec

@@ -23,7 +23,7 @@ data Player = Player {
   _alignment::Alignment,
   _place::Int,
   _selectTileFunc::[Tile] -> IO Tile,
-  _selectPlayerFunc::[Player] -> IO Player
+  _selectPlayerFunc::[Player] -> IO (Maybe Player)
 }
 
 
@@ -101,7 +101,7 @@ wizard = Player {
   _alignment=Evil,
   _place=5,
   _selectTileFunc = return.head,
-  _selectPlayerFunc = return.head
+  _selectPlayerFunc = return . Just . head
 }
 
 ogreChieftain::Player
@@ -116,7 +116,7 @@ ogreChieftain = Player {
   _alignment=Neutral,
   _place=23,
   _selectTileFunc = return.head,
-  _selectPlayerFunc = return.head
+  _selectPlayerFunc = return . Just . head
 }
 
 thief::Player
@@ -131,7 +131,7 @@ thief = Player {
   _alignment=Neutral,
   _place=19,
   _selectTileFunc = return.head,
-  _selectPlayerFunc = return.head
+  _selectPlayerFunc = return . Just . head
 }
 
 getPlayer::ReifiedPrism' Character Player -> [Character] -> Player

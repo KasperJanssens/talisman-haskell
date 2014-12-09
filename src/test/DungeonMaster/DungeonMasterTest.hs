@@ -24,6 +24,7 @@ generate10kDieRolls numberOfDieRolls generator = evalState ( replicateM numberOf
 roundSpec::Spec
 roundSpec= describe "Dungeon master" $ do
             it "should be able to play a round" $ do
+
                 let dieRolls = [6,6,4]
                 newPlayers <- execStateT (runStateT (DungeonMaster.playRound DungeonMaster.chosenPlayers) dieRolls) allPlayers
                 let ogresPlace = view (singular $ each._OgreChieftain.place) newPlayers
@@ -32,6 +33,16 @@ roundSpec= describe "Dungeon master" $ do
                 wizardsPlace `shouldBe` 23
                 let thiefsPlace = view (singular $ each._Thief.place) newPlayers
                 thiefsPlace `shouldBe` 15
+
+fightSpec::Spec
+fightSpec = describe "Dungeon Master" $ do
+              it "should offer the possibility of fighting a character when they land up on the same place" $ do
+                let dieRoll = [5]
+                let ogreChieftainThatWantsToKillTheWizard = ogreChieftain & selectTileFunc .~ return.last
+                let players = [ogreChieftainThatWantsToKillTheWizard, wizard]
+                True `shouldBe` False
+
+
 
 playersInPosition::Spec
 playersInPosition = describe "Dungeon Master" $ do
@@ -62,3 +73,4 @@ playersInPosition = describe "Dungeon Master" $ do
                         let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
                         let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
                         actualCharacters `shouldMatchList` expectedCharacters
+

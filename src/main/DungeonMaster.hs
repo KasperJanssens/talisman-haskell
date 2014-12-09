@@ -50,17 +50,27 @@ getOtherPlayersInSamePosition curPlayerPrism = do
                            )
           [] otherPrisms
 
+fightPlayers:: ReifiedPrism' Character Player -> StateT [Character] IO ()
+fightPlayers charPrism = do
+  otherPlayersOnPos <- getOtherPlayersInSamePosition charPrism
+  let selectFightFunc = charPrism ^. selectPlayerFunc
+  chosenFight <- liftIO $ selectFightFunc otherPlayersOnPos
+  return ()
+  --maybe
+
 playRound::[ReifiedPrism' Character Player] -> StateT [DieRoll] (StateT [Character] IO) ()
 playRound currentPlayers = foldM_
       (\_ characterPrism -> do
          dieRoll <- nextRoll
-         lift $ handlePlayerMove dieRoll characterPrism
+         lift $ movePlayer dieRoll characterPrism
+         fightPlayers characterPrism
+
          return ())
     () currentPlayers
 
 
-handlePlayerMove::Int -> ReifiedPrism' Character Player-> StateT [Character] IO ()
-handlePlayerMove dieRoll characterPrism = do
+movePlayer::Int -> ReifiedPrism' Character Player-> StateT [Character] IO ()
+movePlayer dieRoll characterPrism = do
     characters <- get
     let character = getPlayer characterPrism characters
     let selectTile = character ^. selectTileFunc
