@@ -10,17 +10,17 @@ import Control.Applicative
 placingSpec::Spec
 placingSpec = describe "placing the characters" $ do
          it "should place mr ogre in the crags " $ do
-            let currentPlace = view (singular $ each._OgreChieftain.place) allPlayers
+            let currentPlace = view (singular $ each._OgreChieftain.place) allCharacters
             currentPlace `shouldBe` 23
          it "should place mr wizard in the graveyard" $ do
-             let currentPlace = view (singular $ each._Wizard.place) allPlayers
+             let currentPlace = view (singular $ each._Wizard.place) allCharacters
              currentPlace `shouldBe` 5
          it "should place mr thief in the city" $ do
-             let currentPlace =  view (singular $ each._Thief.place) allPlayers
+             let currentPlace =  view (singular $ each._Thief.place) allCharacters
              currentPlace `shouldBe` 19
 
 lookupTiles::[ReifiedPrism' Space Tile] -> [Tile]
-lookupTiles = foldl (\acc prism -> acc ++ (mapMaybe (preview $ runPrism prism) spaces)) []
+lookupTiles = foldl (\acc charPrism -> acc ++ (mapMaybe (preview $ runPrism charPrism) spaces)) []
 
 movingSpec::Spec
 movingSpec = describe "moving from the crags" $ do

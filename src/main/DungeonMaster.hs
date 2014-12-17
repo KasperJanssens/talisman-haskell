@@ -42,10 +42,10 @@ getOtherPlayersInSamePosition curPlayerPrism = do
     let currentChar  = getCharacter curPlayerPrism currentPlayers
     let otherPlayers = List.delete currentChar currentPlayers
     let otherPrisms  = List.map getPrism otherPlayers
-    foldM (\acc prism -> do
-                           otherPlayerPosition <- getSelectedPlayerPosition prism
+    foldM (\acc charPrism -> do
+                           otherPlayerPosition <- getSelectedPlayerPosition charPrism
                            case () of
-                               _ | otherPlayerPosition == currentPlayerPosition -> return $ prism:acc
+                               _ | otherPlayerPosition == currentPlayerPosition -> return $ charPrism:acc
                                  | otherwise                                    -> return acc
                            )
           [] otherPrisms
@@ -53,18 +53,16 @@ getOtherPlayersInSamePosition curPlayerPrism = do
 fightPlayers:: ReifiedPrism' Character Player -> StateT [Character] IO ()
 fightPlayers charPrism = do
   otherPlayersOnPos <- getOtherPlayersInSamePosition charPrism
-  let selectFightFunc = charPrism ^. selectPlayerFunc
+  let selectFightFunc = undefined
   chosenFight <- liftIO $ selectFightFunc otherPlayersOnPos
   return ()
-  --maybe
 
 playRound::[ReifiedPrism' Character Player] -> StateT [DieRoll] (StateT [Character] IO) ()
 playRound currentPlayers = foldM_
       (\_ characterPrism -> do
          dieRoll <- nextRoll
          lift $ movePlayer dieRoll characterPrism
-         fightPlayers characterPrism
-
+         lift $ fightPlayers characterPrism
          return ())
     () currentPlayers
 
@@ -73,7 +71,7 @@ movePlayer::Int -> ReifiedPrism' Character Player-> StateT [Character] IO ()
 movePlayer dieRoll characterPrism = do
     characters <- get
     let character = getPlayer characterPrism characters
-    let selectTile = character ^. selectTileFunc
+    let selectTile = undefined
     selectedPlayerPosition <- getSelectedPlayerPosition characterPrism
     let reachableTiles = getMovingOptions dieRoll selectedPlayerPosition
     selectedTile <- liftIO $  selectTile reachableTiles

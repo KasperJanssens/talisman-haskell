@@ -21,9 +21,7 @@ data Player = Player {
   _objects::[Object],
   _followers::[Follower],
   _alignment::Alignment,
-  _place::Int,
-  _selectTileFunc::[Tile] -> IO Tile,
-  _selectPlayerFunc::[Player] -> IO (Maybe Player)
+  _place::Int
 }
 
 
@@ -85,6 +83,16 @@ data Character =  OgreChieftain Player
               | Wizard Player deriving (Show, Eq)
 
 
+data AI = AI {
+             selectCharacter :: [ReifiedPrism' Character Player] -> ReifiedPrism' Character Player
+             , selectSpace :: [ReifiedPrism' Space Tile] -> ReifiedPrism' Space Tile
+          }
+
+data ParticipatingCharacter = ParticipatingCharacter {
+                                character :: Character
+                                , artificialIntelligence :: AI
+                              }
+
 makeLenses ''Character
 
 makePrisms ''Character
@@ -99,9 +107,7 @@ wizard = Player {
   _objects=[],
   _followers=[],
   _alignment=Evil,
-  _place=5,
-  _selectTileFunc = return.head,
-  _selectPlayerFunc = return . Just . head
+  _place=5
 }
 
 ogreChieftain::Player
@@ -114,9 +120,7 @@ ogreChieftain = Player {
   _objects=[],
   _followers=[],
   _alignment=Neutral,
-  _place=23,
-  _selectTileFunc = return.head,
-  _selectPlayerFunc = return . Just . head
+  _place=23
 }
 
 thief::Player
@@ -129,25 +133,22 @@ thief = Player {
   _objects=[],
   _followers=[],
   _alignment=Neutral,
-  _place=19,
-  _selectTileFunc = return.head,
-  _selectPlayerFunc = return . Just . head
+  _place=19
 }
 
 getPlayer::ReifiedPrism' Character Player -> [Character] -> Player
 getPlayer characterPrism chars = head $ mapMaybe (preview $ runPrism characterPrism) chars
 
 getCharacter::ReifiedPrism' Character Player -> [Character] -> Character
--- getCharacter prism chars = review (runPrism prism) $ getPlayer prism chars
-getCharacter prism chars = runPrism prism # getPlayer prism chars
+getCharacter charPrism chars = runPrism charPrism # getPlayer charPrism chars
 
 getPrism::Character -> ReifiedPrism' Character Player
 getPrism (Thief _ ) = Prism _Thief
 getPrism (Wizard _) = Prism _Wizard
 getPrism (OgreChieftain _) = Prism _OgreChieftain
 
-allPlayers::[Character]
-allPlayers=[OgreChieftain ogreChieftain
+allCharacters::[Character]
+allCharacters=[OgreChieftain ogreChieftain
           , Wizard wizard
           , Thief thief
           ]

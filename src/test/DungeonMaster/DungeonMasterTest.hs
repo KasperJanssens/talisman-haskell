@@ -26,7 +26,7 @@ roundSpec= describe "Dungeon master" $ do
             it "should be able to play a round" $ do
 
                 let dieRolls = [6,6,4]
-                newPlayers <- execStateT (runStateT (DungeonMaster.playRound DungeonMaster.chosenPlayers) dieRolls) allPlayers
+                newPlayers <- execStateT (runStateT (DungeonMaster.playRound DungeonMaster.chosenPlayers) dieRolls) allCharacters
                 let ogresPlace = view (singular $ each._OgreChieftain.place) newPlayers
                 ogresPlace `shouldBe` 17
                 let wizardsPlace = view (singular $ each._Wizard.place) newPlayers
@@ -38,7 +38,8 @@ fightSpec::Spec
 fightSpec = describe "Dungeon Master" $ do
               it "should offer the possibility of fighting a character when they land up on the same place" $ do
                 let dieRoll = [5]
-                let ogreChieftainThatWantsToKillTheWizard = ogreChieftain & selectTileFunc .~ return.last
+                let selectTileFunc = undefined
+                let ogreChieftainThatWantsToKillTheWizard = ogreChieftain & selectTileFunc .~ last
                 let players = [ogreChieftainThatWantsToKillTheWizard, wizard]
                 True `shouldBe` False
 
@@ -47,12 +48,12 @@ fightSpec = describe "Dungeon Master" $ do
 playersInPosition::Spec
 playersInPosition = describe "Dungeon Master" $ do
                       it "should find no players on the same position in the begin-state" $ do
-                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) allPlayers
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) allCharacters
                         length otherPlayerPrisms `shouldBe` 0
 
                       it "should find Wizard on the same place" $ do
-                        let thiefsPlace = view (singular $ each._Thief.place) allPlayers
-                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allPlayers
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
 
                         otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) wizardOnThiefsPlace
 
@@ -63,8 +64,8 @@ playersInPosition = describe "Dungeon Master" $ do
 
 
                       it "should find Wizard and OgreChieftain on the same place" $ do
-                        let thiefsPlace = view (singular $ each._Thief.place) allPlayers
-                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allPlayers
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
                         let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
 
                         otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
@@ -73,4 +74,305 @@ playersInPosition = describe "Dungeon Master" $ do
                         let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
                         let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
                         actualCharacters `shouldMatchList` expectedCharacters
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+                      it "should find Wizard and OgreChieftain on the same place" $ do
+                        let thiefsPlace = view (singular $ each._Thief.place) allCharacters
+                        let wizardOnThiefsPlace = over (singular $ each._Wizard.place) (\_ -> thiefsPlace) allCharacters
+                        let ogreAndWizardOnThiefsPlace = over (singular $ each._OgreChieftain.place) (\_ -> thiefsPlace) wizardOnThiefsPlace
+
+                        otherPlayerPrisms <- evalStateT (DungeonMaster.getOtherPlayersInSamePosition $ Prism _Thief) ogreAndWizardOnThiefsPlace
+
+                        length otherPlayerPrisms `shouldBe` 2
+                        let actualCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) otherPlayerPrisms
+                        let expectedCharacters = map (flip getCharacter $ ogreAndWizardOnThiefsPlace) [Prism _Wizard, Prism _OgreChieftain]
+                        actualCharacters `shouldMatchList` expectedCharacters
+
+
+
+
+
 
